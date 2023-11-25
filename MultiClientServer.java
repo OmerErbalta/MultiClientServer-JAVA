@@ -8,15 +8,15 @@ public class MultiClientServer {
     public static void main(String[] args) {
         try {
             ServerSocket serverSocket = new ServerSocket(6000);
-            System.out.println("Sunucu başlatıldı. İstemci bekleniyor...");
+            System.out.println("Server started. Waiting for clients...");
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("İstemci bağlandı: " + clientSocket);
+                System.out.println("Client connected: " + clientSocket);
 
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-                // İstemci adını belirleme
+                // Setting the client's name
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 String clientName = in.readLine();
                 clients.put(clientName, out);
@@ -35,7 +35,7 @@ public class MultiClientServer {
         if (writer != null) {
             writer.println(message);
         } else {
-            System.out.println("Belirtilen istemci bulunamadı.");
+            System.out.println("Specified client not found.");
         }
     }
 
@@ -67,7 +67,7 @@ class ClientHandler implements Runnable {
             while ((messageFromClient = in.readLine()) != null) {
                 System.out.println("[" + clientName + "]: " + messageFromClient);
 
-                // Özel mesaj işleme
+                // Processing private messages
                 if (messageFromClient.startsWith("#")) {
                     int index = messageFromClient.indexOf(' ');
                     if (index != -1) {
@@ -75,10 +75,10 @@ class ClientHandler implements Runnable {
                         String messageContent = messageFromClient.substring(index + 1);
                         MultiClientServer.sendMessageToClient(targetClient, "[" + clientName + "]: " + messageContent);
                     } else {
-                        System.out.println("Geçersiz komut formatı.");
+                        System.out.println("Invalid command format.");
                     }
                 } else {
-                    // Genel mesajları diğer istemcilere yayınla
+                    // Broadcasting general messages to other clients
                     MultiClientServer.broadcastMessage(clientName, messageFromClient);
                 }
             }
